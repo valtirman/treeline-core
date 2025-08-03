@@ -1,40 +1,17 @@
 from mitmproxy import http
-import json
-import uuid
 import requests
-
-SCORING_API = "http://scorer:8000/score"
-RISK_THRESHOLD = 80  # block anything at or above this score
+import json
 
 class TreelineInterceptor:
-    def request(self, flow: http.HTTPFlow):
-        if "openai.com" in flow.request.pretty_host or "anthropic.com" in flow.request.pretty_host:
-            flow.request.headers["X-Treeline-Request-ID"] = str(uuid.uuid4())
-
-    def response(self, flow: http.HTTPFlow):
-        if "openai.com" in flow.request.pretty_host or "anthropic.com" in flow.request.pretty_host:
-            try:
-                payload = {
-                    "request": {
-                        "method": flow.request.method,
-                        "url": flow.request.pretty_url,
-                        "headers": dict(flow.request.headers),
-                        "body": flow.request.get_text()
-                    },
-                    "response": {
-                        "status_code": flow.response.status_code,
-                        "headers": dict(flow.response.headers),
-                        "body": flow.response.get_text()
-                    }
-                }
-                result = requests.post(SCORING_API, json=payload, timeout=2)
-                score = result.json().get("score", 0)
-
-                if score >= RISK_THRESHOLD:
-                    flow.response.set_text("[Treeline Sidecar] ⚠️ Response blocked due to high risk score.")
-                    flow.response.status_code = 403
-
-            except Exception as e:
-                print(f"[⚠️ Treeline] Scoring or enforcement failed: {e}")
+    def request(self, flow: http.HTTPFlow) -> None:
+        if flow.request.method == "POST" and "application/json" in flow.request.headers.get("content-type", ""):
+            content = flow.request.get_text()
+            score = requests.post("http://score-api:7070/score", json={"content": content}).json()
+            flow.request.headers["X-Treeline-Risk"] = score["risk"]
+            flow.request.headers["X-Treeline-Sensitivity"] = score["sensitivity"]
+            if score["action"] == "block":
+                flow.response = http.HTTPResponse.make(
+                    403, b"LLM response redacted by Treeline", {"Content-Type": "text/plain"}
+                )
 
 addons = [TreelineInterceptor()]

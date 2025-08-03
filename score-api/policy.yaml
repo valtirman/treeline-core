@@ -1,0 +1,9 @@
+rules:
+  - match: "ssn"
+    risk: "high"
+    sensitivity: "pii"
+    action: "block"
+  - match: "credit card"
+    risk: "high"
+    sensitivity: "pii"
+    action: "block"
