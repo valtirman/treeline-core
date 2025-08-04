@@ -1,0 +1,14 @@
+# Python build
+__pycache__/
+*.pyc
+*.pyo
+
+# Local envs
+.env
+.env.*
+
+# Logs
+telemetry.log
+
+# Docker
+*.log
