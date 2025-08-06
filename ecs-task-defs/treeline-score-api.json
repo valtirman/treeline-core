@@ -1,0 +1,30 @@
+{
+  "family": "treeline-score-api",
+  "networkMode": "awsvpc",
+  "requiresCompatibilities": [
+    "FARGATE"
+  ],
+  "cpu": "256",
+  "memory": "512",
+  "executionRoleArn": "arn:aws:iam::447711209865:role/TreelineECSExecutionRole",
+  "containerDefinitions": [
+    {
+      "name": "treeline-score-api",
+      "image": "447711209865.dkr.ecr.us-east-2.amazonaws.com/treeline-score-api:latest",
+      "portMappings": [
+        {
+          "containerPort": 7070
+        }
+      ],
+      "essential": true,
+      "logConfiguration": {
+        "logDriver": "awslogs",
+        "options": {
+          "awslogs-group": "/ecs/treeline-score-api",
+          "awslogs-region": "us-east-2",
+          "awslogs-stream-prefix": "ecs"
+        }
+      }
+    }
+  ]
+}
