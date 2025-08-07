@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  score-api:
+    build:
+      context: ../score-api
+    ports:
+      - "7070:7070"
+    container_name: treeline_score-api
+
+  proxy:
+    build:
+      context: ../sidecar/proxy
+    ports:
+      - "8080:8080"
+    depends_on:
+      - score-api
+    container_name: treeline_proxy

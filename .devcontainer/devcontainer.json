@@ -1,0 +1,15 @@
+{
+  "name": "Treeline Dev",
+  "dockerComposeFile": "docker-compose.yaml",
+  "service": "proxy",
+  "workspaceFolder": "/app",
+  "settings": {
+    "terminal.integrated.defaultProfile.linux": "bash"
+  },
+  "extensions": [
+    "ms-azuretools.vscode-docker",
+    "ms-python.python",
+    "hashicorp.terraform"
+  ],
+  "mounts": ["source=${localWorkspaceFolder},target=/app,type=bind"]
+}

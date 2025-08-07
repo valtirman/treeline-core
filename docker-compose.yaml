@@ -1,0 +1,24 @@
+version: '3.8'
+
+services:
+  proxy:
+    build:
+      context: ./sidecar/proxy
+    container_name: treeline-proxy
+    ports:
+      - "8080:8080"     # HTTP proxy port
+    depends_on:
+      - scorer
+    environment:
+      - SCORING_API=http://scorer:8000/score
+    command: mitmdump -p 8080 -s /app/mitmproxy_config.py
+    volumes:
+      - ./sidecar/proxy/mitmproxy_config.py:/app/mitmproxy_config.py
+
+  scorer:
+    build:
+      context: ./sidecar/scorer
+    container_name: treeline-scorer
+    ports:
+      - "8000:8000"
+    command: uvicorn app:app --host 0.0.0.0 --port 8000
